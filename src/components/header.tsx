@@ -89,7 +89,7 @@ export function Header({
           </nav>
 
           <div className="flex items-center gap-1">
-            {user && !subscriptionActive && (
+            {user && !subscriptionActive && user.role !== "ADMIN" && (
               <Link
                 href="/abonnement"
                 className="btn-gold hidden !rounded-full !px-4 !py-2 text-xs sm:inline-flex"
@@ -164,7 +164,7 @@ export function Header({
                   {item.label}
                 </Link>
               ))}
-              {user && !subscriptionActive && (
+              {user && !subscriptionActive && user.role !== "ADMIN" && (
                 <Link
                   href="/abonnement"
                   onClick={() => setMenuOpen(false)}

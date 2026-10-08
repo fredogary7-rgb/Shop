@@ -16,7 +16,7 @@ export default async function AccountPage() {
   if (!user) redirect("/login");
 
   const subscription = await getActiveSubscription(user.id);
-  if (!subscription) redirect("/abonnement");
+  if (!subscription && user.role !== "ADMIN") redirect("/abonnement");
 
   const orders = await prisma.order.findMany({
     where: { userId: user.id },
@@ -39,27 +39,29 @@ export default async function AccountPage() {
         </form>
       </div>
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gold-400/40 bg-gold-400/10 px-6 py-4">
-        <div className="flex items-center gap-3">
-          <BadgeCheck className="h-6 w-6 text-gold-600" />
-          <div>
-            <p className="font-semibold text-ink">
-              Abonnement {getPlan(subscription.tier).name} actif
-            </p>
-            <p className="text-sm text-ink-muted">
-              {subscription.endDate
-                ? `Expire le ${subscription.endDate.toLocaleDateString("fr-FR")}`
-                : "Actif"}
-            </p>
+      {subscription && (
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gold-400/40 bg-gold-400/10 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <BadgeCheck className="h-6 w-6 text-gold-600" />
+            <div>
+              <p className="font-semibold text-ink">
+                Abonnement {getPlan(subscription.tier).name} actif
+              </p>
+              <p className="text-sm text-ink-muted">
+                {subscription.endDate
+                  ? `Expire le ${subscription.endDate.toLocaleDateString("fr-FR")}`
+                  : "Actif"}
+              </p>
+            </div>
           </div>
+          <Link
+            href="/abonnement"
+            className="btn-outline !px-5 !py-2.5 text-sm"
+          >
+            Gérer mon abonnement
+          </Link>
         </div>
-        <Link
-          href="/abonnement"
-          className="btn-outline !px-5 !py-2.5 text-sm"
-        >
-          Gérer mon abonnement
-        </Link>
-      </div>
+      )}
 
       <div className="mt-10 grid gap-10 lg:grid-cols-3">
         <section className="card p-6 lg:col-span-1">
