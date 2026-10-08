@@ -5,6 +5,7 @@ export type Plan = {
   name: string;
   tagline: string;
   priceFCFA: number;
+  priceUSD: number;
   priceLabel: string;
   durationDays: number;
   features: string[];
@@ -17,6 +18,7 @@ export const PLANS: Plan[] = [
     name: "Starter",
     tagline: "Pour lancer votre boutique",
     priceFCFA: 2000,
+    priceUSD: 5,
     priceLabel: "2 000 FCFA / mois",
     durationDays: 30,
     features: [
@@ -32,6 +34,7 @@ export const PLANS: Plan[] = [
     name: "Pro",
     tagline: "Pour développer votre activité",
     priceFCFA: 5000,
+    priceUSD: 10,
     priceLabel: "5 000 FCFA / mois",
     durationDays: 30,
     features: [
@@ -49,6 +52,7 @@ export const PLANS: Plan[] = [
     name: "Premium",
     tagline: "L'expérience ultime (2 mois offerts)",
     priceFCFA: 50000,
+    priceUSD: 90,
     priceLabel: "50 000 FCFA / an",
     durationDays: 365,
     features: [

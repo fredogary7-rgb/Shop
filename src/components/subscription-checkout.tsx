@@ -306,7 +306,12 @@ export function SubscriptionCheckout() {
                       Cliquez sur le bouton PayPal ci-dessous pour finaliser
                       votre paiement.
                     </p>
-                    <PayPalButton />
+                    <PayPalButton
+                      onSuccess={() => {
+                        setDone(true);
+                        router.refresh();
+                      }}
+                    />
                     <p className="flex items-center justify-center gap-1.5 text-xs text-ink-muted">
                       <ShieldCheck className="h-3.5 w-3.5" />
                       Paiement sécurisé via PayPal

@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         status: "PENDING",
         provider: "PAYPAL",
         orderId,
-        amount: plan.priceFCFA,
+        amount: plan.priceUSD,
         currency: "USD",
       },
     });
