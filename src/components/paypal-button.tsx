@@ -42,6 +42,15 @@ export function PayPalButton() {
     };
   }, [clientId, hostedButtonId]);
 
+  if (!clientId || !hostedButtonId) {
+    return (
+      <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-700">
+        Bouton PayPal indisponible : variables d&apos;environnement manquantes
+        (NEXT_PUBLIC_PAYPAL_CLIENT_ID / NEXT_PUBLIC_PAYPAL_HOSTED_BUTTON_ID).
+      </div>
+    );
+  }
+
   return (
     <div
       id={`paypal-container-${hostedButtonId}`}
@@ -50,3 +59,4 @@ export function PayPalButton() {
     />
   );
 }
+

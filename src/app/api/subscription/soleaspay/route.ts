@@ -47,6 +47,20 @@ export async function POST(req: Request) {
     const apiKey = process.env.SOLEASPAY_API_KEY;
     const base = process.env.SOLEASPAY_BASE_URL ?? "https://soleaspay.com";
 
+    if (!apiKey) {
+      await prisma.subscription.update({
+        where: { orderId },
+        data: { status: "CANCELLED" },
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Clé API Soleaspay non configurée. Ajoutez SOLEASPAY_API_KEY dans les variables d'environnement du serveur.",
+        },
+        { status: 500 }
+      );
+    }
+
     let res: Response;
     try {
       res = await fetch(`${base}/api/agent/bills/v3`, {

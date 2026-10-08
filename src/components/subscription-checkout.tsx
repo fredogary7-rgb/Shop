@@ -22,6 +22,7 @@ export function SubscriptionCheckout() {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [paypalStarted, setPaypalStarted] = useState(false);
 
   const plan = PLANS.find((p) => p.id === selectedPlan) ?? null;
   const country = SOLEASPAY_COUNTRIES.find((c) => c.code === countryCode);
@@ -82,6 +83,20 @@ export function SubscriptionCheckout() {
     setServiceId(c?.services[0]?.id ?? 1);
   };
 
+  const startPaypal = async () => {
+    if (!selectedPlan || paypalStarted) return;
+    try {
+      const res = await fetch("/api/subscription/paypal/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier: selectedPlan }),
+      });
+      if (res.ok) setPaypalStarted(true);
+    } catch {
+      // ignore
+    }
+  };
+
   if (done && plan) {
     return (
       <div className="mx-auto max-w-lg text-center">
@@ -113,36 +128,39 @@ export function SubscriptionCheckout() {
         </p>
       </div>
 
-      <div className="mt-12 grid gap-6 lg:grid-cols-3">
+      <div className="mt-12 grid grid-cols-3 gap-3 sm:gap-6">
         {PLANS.map((p) => (
           <div
             key={p.id}
             className={cn(
-              "relative flex flex-col rounded-2xl border bg-white p-8 transition",
+              "relative flex flex-col rounded-2xl border bg-white p-3 transition sm:p-8",
               p.highlight
                 ? "border-gold-400 shadow-gold"
                 : "border-ink/10 shadow-card"
             )}
           >
             {p.highlight && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gold-400 px-4 py-1 text-xs font-bold uppercase tracking-wide text-ink">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gold-400 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-ink sm:px-4 sm:text-xs">
                 Populaire
               </span>
             )}
-            <h2 className="font-serif text-2xl text-ink">{p.name}</h2>
-            <p className="mt-1 text-sm text-ink-muted">{p.tagline}</p>
-            <p className="mt-5">
-              <span className="font-serif text-4xl text-ink">
+            <h2 className="font-serif text-lg text-ink sm:text-2xl">{p.name}</h2>
+            <p className="mt-1 hidden text-sm text-ink-muted sm:block">{p.tagline}</p>
+            <p className="mt-3 sm:mt-5">
+              <span className="font-serif text-xl text-ink sm:text-4xl">
                 {formatFCFA(p.priceFCFA)}
               </span>
-              <span className="ml-1 text-sm text-ink-muted">
+              <span className="ml-1 text-xs text-ink-muted sm:text-sm">
                 / {p.durationDays >= 365 ? "an" : "mois"}
               </span>
             </p>
-            <ul className="mt-6 flex-1 space-y-3">
+            <ul className="mt-4 flex-1 space-y-2 sm:mt-6 sm:space-y-3">
               {p.features.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-ink-muted">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
+                <li
+                  key={f}
+                  className="flex items-start gap-1.5 text-[11px] text-ink-muted sm:gap-2.5 sm:text-sm"
+                >
+                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-600 sm:h-4 sm:w-4" />
                   {f}
                 </li>
               ))}
@@ -151,11 +169,14 @@ export function SubscriptionCheckout() {
               type="button"
               onClick={() => {
                 setSelectedPlan(p.id);
+                setPaypalStarted(false);
                 setError("");
               }}
               className={cn(
-                "mt-8 w-full",
-                p.highlight ? "btn-gold !py-3.5 text-sm" : "btn-outline !py-3.5 text-sm"
+                "mt-5 w-full text-xs sm:mt-8 sm:text-sm",
+                p.highlight
+                  ? "btn-gold !py-3 sm:!py-3.5"
+                  : "btn-outline !py-3 sm:!py-3.5"
               )}
             >
               Choisir {p.name}
@@ -201,7 +222,10 @@ export function SubscriptionCheckout() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setMethod("paypal")}
+                    onClick={() => {
+                      setMethod("paypal");
+                      startPaypal();
+                    }}
                     className={cn(
                       "flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition",
                       method === "paypal"
