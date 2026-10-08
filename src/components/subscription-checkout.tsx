@@ -128,39 +128,39 @@ export function SubscriptionCheckout() {
         </p>
       </div>
 
-      <div className="mt-12 grid grid-cols-3 gap-3 sm:gap-6">
+      <div className="mt-12 flex gap-5 overflow-x-auto pb-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:overflow-visible lg:pb-0">
         {PLANS.map((p) => (
           <div
             key={p.id}
             className={cn(
-              "relative flex flex-col rounded-2xl border bg-white p-3 transition sm:p-8",
+              "relative flex w-[280px] shrink-0 flex-col rounded-2xl border bg-white p-6 transition sm:w-[320px] lg:w-auto lg:p-8",
               p.highlight
                 ? "border-gold-400 shadow-gold"
                 : "border-ink/10 shadow-card"
             )}
           >
             {p.highlight && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gold-400 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-ink sm:px-4 sm:text-xs">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gold-400 px-4 py-1 text-xs font-bold uppercase tracking-wide text-ink">
                 Populaire
               </span>
             )}
-            <h2 className="font-serif text-lg text-ink sm:text-2xl">{p.name}</h2>
-            <p className="mt-1 hidden text-sm text-ink-muted sm:block">{p.tagline}</p>
-            <p className="mt-3 sm:mt-5">
-              <span className="font-serif text-xl text-ink sm:text-4xl">
+            <h2 className="font-serif text-2xl text-ink">{p.name}</h2>
+            <p className="mt-1 text-sm text-ink-muted">{p.tagline}</p>
+            <p className="mt-5">
+              <span className="font-serif text-4xl text-ink">
                 {formatFCFA(p.priceFCFA)}
               </span>
-              <span className="ml-1 text-xs text-ink-muted sm:text-sm">
+              <span className="ml-1 text-sm text-ink-muted">
                 / {p.durationDays >= 365 ? "an" : "mois"}
               </span>
             </p>
-            <ul className="mt-4 flex-1 space-y-2 sm:mt-6 sm:space-y-3">
+            <ul className="mt-6 flex-1 space-y-3">
               {p.features.map((f) => (
                 <li
                   key={f}
-                  className="flex items-start gap-1.5 text-[11px] text-ink-muted sm:gap-2.5 sm:text-sm"
+                  className="flex items-start gap-2.5 text-sm text-ink-muted"
                 >
-                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-600 sm:h-4 sm:w-4" />
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
                   {f}
                 </li>
               ))}
@@ -173,10 +173,8 @@ export function SubscriptionCheckout() {
                 setError("");
               }}
               className={cn(
-                "mt-5 w-full text-xs sm:mt-8 sm:text-sm",
-                p.highlight
-                  ? "btn-gold !py-3 sm:!py-3.5"
-                  : "btn-outline !py-3 sm:!py-3.5"
+                "mt-8 w-full text-sm",
+                p.highlight ? "btn-gold !py-3.5" : "btn-outline !py-3.5"
               )}
             >
               Choisir {p.name}
