@@ -7,6 +7,9 @@ import { formatPrice } from "@/lib/utils";
 import { ProductGallery } from "@/components/product-gallery";
 import { AddToCart } from "@/components/add-to-cart";
 import { ProductCard } from "@/components/product-card";
+import { WishlistButton } from "@/components/wishlist-button";
+import { StarRating } from "@/components/star-rating";
+import { ReviewForm } from "@/components/review-form";
 
 export async function generateMetadata({
   params,
@@ -40,6 +43,23 @@ export default async function ProductPage({
     take: 4,
     include: { category: true },
   });
+
+  const [reviews, reviewAgg] = await Promise.all([
+    prisma.review.findMany({
+      where: { productId: product.id },
+      include: { user: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    prisma.review.aggregate({
+      where: { productId: product.id },
+      _avg: { rating: true },
+      _count: true,
+    }),
+  ]);
+
+  const avgRating = Number(reviewAgg._avg.rating ?? 0);
+  const reviewCount = reviewAgg._count;
 
   const price = Number(product.price);
   const compareAtPrice = product.compareAtPrice
@@ -83,7 +103,13 @@ export default async function ProductPage({
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        <ProductGallery images={product.images} title={product.title} />
+        <div className="relative">
+          <ProductGallery images={product.images} title={product.title} />
+          <WishlistButton
+            productId={product.id}
+            className="absolute right-3 top-3 z-10"
+          />
+        </div>
 
         <div>
           <p className="eyebrow">{product.category.name}</p>
@@ -164,6 +190,53 @@ export default async function ProductPage({
           </p>
         </section>
       )}
+
+      <section className="mt-16">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h2 className="heading-lg">Avis clients</h2>
+          {reviewCount > 0 && (
+            <div className="flex items-center gap-2">
+              <StarRating rating={avgRating} size={18} />
+              <span className="text-sm text-ink-muted">
+                {avgRating.toFixed(1)} / 5 · {reviewCount} avis
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            {reviews.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-ink/15 bg-white p-8 text-center text-ink-muted">
+                Aucun avis pour le moment. Soyez le premier à donner votre avis !
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((r) => (
+                  <div key={r.id} className="card p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-semibold text-ink">{r.user.name}</p>
+                      <span className="text-xs text-ink-subtle">
+                        {new Date(r.createdAt).toLocaleDateString("fr-FR")}
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <StarRating rating={r.rating} />
+                    </div>
+                    {r.title && (
+                      <p className="mt-2 font-medium text-ink">{r.title}</p>
+                    )}
+                    {r.comment && (
+                      <p className="mt-1 text-sm text-ink-muted">{r.comment}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <ReviewForm productId={product.id} />
+        </div>
+      </section>
 
       {mappedRelated.length > 0 && (
         <section className="mt-16">

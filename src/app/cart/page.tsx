@@ -1,13 +1,59 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Tag, X } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { formatPrice, SHIPPING_FLAT_RATE } from "@/lib/utils";
 
 export default function CartPage() {
   const { items, subtotal, updateQuantity, removeItem, mounted } = useCart();
+
+  const [promoInput, setPromoInput] = useState("");
+  const [promo, setPromo] = useState<{ code: string; discount: number } | null>(
+    null
+  );
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState("");
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("moretti_promo");
+      if (stored) setPromo(JSON.parse(stored));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const applyPromo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!promoInput.trim()) return;
+    setPromoLoading(true);
+    setPromoError("");
+    try {
+      const res = await fetch("/api/promo/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoInput, subtotal }),
+      });
+      const data = await res.json();
+      if (!data.valid) throw new Error(data.reason ?? "Code invalide.");
+      const p = { code: data.code, discount: data.discount };
+      setPromo(p);
+      localStorage.setItem("moretti_promo", JSON.stringify(p));
+      setPromoInput("");
+    } catch (err) {
+      setPromoError(err instanceof Error ? err.message : "Code invalide.");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const removePromo = () => {
+    setPromo(null);
+    localStorage.removeItem("moretti_promo");
+  };
 
   if (!mounted) {
     return <div className="shell py-12" />;
@@ -33,8 +79,10 @@ export default function CartPage() {
     );
   }
 
-  const shipping = subtotal >= 80 ? 0 : SHIPPING_FLAT_RATE;
-  const remaining = Math.max(0, 80 - subtotal);
+  const discount = promo?.discount ?? 0;
+  const discountedSubtotal = subtotal - discount;
+  const shipping = discountedSubtotal >= 80 ? 0 : SHIPPING_FLAT_RATE;
+  const remaining = Math.max(0, 80 - discountedSubtotal);
 
   return (
     <div className="shell py-12">
@@ -132,11 +180,56 @@ export default function CartPage() {
             </p>
           )}
 
+          {promo ? (
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-gold-400/15 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-gold-600" />
+                <span className="text-sm font-medium text-ink">{promo.code}</span>
+                <span className="text-sm text-ink-muted">-{formatPrice(promo.discount)}</span>
+              </div>
+              <button
+                type="button"
+                onClick={removePromo}
+                className="text-ink-subtle transition hover:text-red-500"
+                aria-label="Retirer le code"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={applyPromo} className="mt-4">
+              <div className="flex gap-2">
+                <input
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value)}
+                  placeholder="Code promo"
+                  className="input !py-2.5"
+                />
+                <button
+                  type="submit"
+                  disabled={promoLoading}
+                  className="btn-outline shrink-0 !px-4 !py-2.5 text-sm disabled:opacity-60"
+                >
+                  {promoLoading ? "…" : "Appliquer"}
+                </button>
+              </div>
+              {promoError && (
+                <p className="mt-1.5 text-xs text-red-600">{promoError}</p>
+              )}
+            </form>
+          )}
+
           <dl className="mt-5 space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-ink-muted">Sous-total</dt>
               <dd className="font-medium text-ink">{formatPrice(subtotal)}</dd>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-gold-700">
+                <dt>Réduction</dt>
+                <dd className="font-medium">-{formatPrice(discount)}</dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt className="text-ink-muted">Livraison</dt>
               <dd className="font-medium text-ink">
@@ -146,7 +239,7 @@ export default function CartPage() {
             <div className="flex justify-between border-t border-ink/10 pt-3">
               <dt className="font-semibold text-ink">Total</dt>
               <dd className="font-serif text-xl text-ink">
-                {formatPrice(subtotal + shipping)}
+                {formatPrice(discountedSubtotal + shipping)}
               </dd>
             </div>
           </dl>

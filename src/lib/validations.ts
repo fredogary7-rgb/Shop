@@ -23,6 +23,7 @@ export const checkoutSchema = z.object({
   country: z.string().min(2, "Pays requis"),
   postalCode: z.string().min(2, "Code postal requis"),
   paymentMethod: z.string().default("card"),
+  promoCode: z.string().optional(),
   notes: z.string().optional(),
   items: z
     .array(

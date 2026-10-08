@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, Tags, ShoppingCart, Users } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, Users, BadgePercent } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -10,6 +10,7 @@ const items = [
   { href: "/admin/products", label: "Produits", Icon: Package },
   { href: "/admin/categories", label: "Catégories", Icon: Tags },
   { href: "/admin/orders", label: "Commandes", Icon: ShoppingCart },
+  { href: "/admin/promos", label: "Codes promo", Icon: BadgePercent },
   { href: "/admin/customers", label: "Clients", Icon: Users },
 ];
 

@@ -188,3 +188,53 @@ export async function updateOrderStatus(
     };
   }
 }
+
+export async function createPromoCode(input: unknown): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const d = input as {
+      code?: string;
+      type?: string;
+      value?: string | number;
+      minAmount?: string | number;
+      maxUses?: string | number;
+      expiresAt?: string;
+    };
+    if (!d.code || !d.value) {
+      return { ok: false, error: "Code et valeur requis." };
+    }
+
+    await prisma.promoCode.create({
+      data: {
+        code: String(d.code).toUpperCase().trim(),
+        type: d.type === "FIXED" ? "FIXED" : "PERCENTAGE",
+        value: Number(d.value),
+        minAmount: d.minAmount ? Number(d.minAmount) : null,
+        maxUses: d.maxUses ? Number(d.maxUses) : null,
+        expiresAt: d.expiresAt ? new Date(d.expiresAt) : null,
+      },
+    });
+
+    revalidatePath("/admin/promos");
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Une erreur est survenue.",
+    };
+  }
+}
+
+export async function deletePromoCode(id: string): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    await prisma.promoCode.delete({ where: { id } });
+    revalidatePath("/admin/promos");
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Une erreur est survenue.",
+    };
+  }
+}

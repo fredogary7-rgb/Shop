@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Check, Lock } from "lucide-react";
+import { ArrowRight, Check, Lock, Tag } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useToast } from "@/context/toast-context";
 import { formatPrice, SHIPPING_FLAT_RATE, TAX_RATE } from "@/lib/utils";
@@ -26,6 +26,18 @@ export default function CheckoutPage() {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<{ orderNumber: string } | null>(null);
+  const [promo, setPromo] = useState<{ code: string; discount: number } | null>(
+    null
+  );
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("moretti_promo");
+      if (stored) setPromo(JSON.parse(stored));
+    } catch {
+      // ignore
+    }
+  }, []);
 
   if (!mounted) {
     return <div className="shell py-12" />;
@@ -67,9 +79,11 @@ export default function CheckoutPage() {
     );
   }
 
-  const shipping = subtotal >= 80 ? 0 : SHIPPING_FLAT_RATE;
-  const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
-  const total = Math.round((subtotal + shipping + tax) * 100) / 100;
+  const discount = promo?.discount ?? 0;
+  const discountedSubtotal = subtotal - discount;
+  const shipping = discountedSubtotal >= 80 ? 0 : SHIPPING_FLAT_RATE;
+  const tax = Math.round(discountedSubtotal * TAX_RATE * 100) / 100;
+  const total = Math.round((discountedSubtotal + shipping + tax) * 100) / 100;
 
   const update =
     (key: keyof typeof initialForm) =>
@@ -85,6 +99,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          promoCode: promo?.code ?? null,
           items: items.map((i) => ({
             productId: i.productId,
             title: i.title,
@@ -97,6 +112,7 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Une erreur est survenue.");
       clearCart();
+      localStorage.removeItem("moretti_promo");
       setSuccess({ orderNumber: data.order.orderNumber });
       window.scrollTo({ top: 0 });
     } catch (err) {
@@ -299,6 +315,15 @@ export default function CheckoutPage() {
               <dt className="text-ink-muted">Sous-total</dt>
               <dd className="font-medium text-ink">{formatPrice(subtotal)}</dd>
             </div>
+            {promo && (
+              <div className="flex items-center justify-between text-gold-700">
+                <dt className="flex items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5" />
+                  {promo.code}
+                </dt>
+                <dd className="font-medium">-{formatPrice(discount)}</dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt className="text-ink-muted">Livraison</dt>
               <dd className="font-medium text-ink">

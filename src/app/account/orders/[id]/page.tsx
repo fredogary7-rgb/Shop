@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { formatPrice } from "@/lib/utils";
 import { StatusBadge } from "@/components/status-badge";
+import { OrderTimeline } from "@/components/order-timeline";
 
 export default async function OrderDetailPage({
   params,
@@ -47,6 +48,10 @@ export default async function OrderDetailPage({
           year: "numeric",
         })}
       </p>
+
+      <div className="mt-6">
+        <OrderTimeline status={order.status} />
+      </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">

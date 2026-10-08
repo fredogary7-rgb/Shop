@@ -7,6 +7,7 @@ import {
   SHIPPING_FLAT_RATE,
   TAX_RATE,
 } from "@/lib/utils";
+import { validatePromoCode, incrementPromoUses } from "@/lib/promo";
 
 export async function POST(req: Request) {
   try {
@@ -26,9 +27,21 @@ export async function POST(req: Request) {
       (acc, i) => acc + i.price * i.quantity,
       0
     );
-    const shipping = subtotal >= 80 ? 0 : SHIPPING_FLAT_RATE;
-    const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
-    const total = Math.round((subtotal + shipping + tax) * 100) / 100;
+
+    let discount = 0;
+    let promoCode: string | null = null;
+    if (data.promoCode) {
+      const promo = await validatePromoCode(data.promoCode, subtotal);
+      if (promo.valid) {
+        discount = promo.discount;
+        promoCode = promo.code;
+      }
+    }
+
+    const discountedSubtotal = Math.round((subtotal - discount) * 100) / 100;
+    const shipping = discountedSubtotal >= 80 ? 0 : SHIPPING_FLAT_RATE;
+    const tax = Math.round(discountedSubtotal * TAX_RATE * 100) / 100;
+    const total = Math.round((discountedSubtotal + shipping + tax) * 100) / 100;
 
     const order = await prisma.order.create({
       data: {
@@ -42,6 +55,8 @@ export async function POST(req: Request) {
         country: data.country,
         postalCode: data.postalCode,
         subtotal,
+        discount,
+        promoCode,
         shipping,
         tax,
         total,
@@ -58,6 +73,8 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    if (promoCode) await incrementPromoUses(promoCode);
 
     return NextResponse.json(
       {
