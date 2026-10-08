@@ -28,6 +28,19 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum PlanTier {
+  STARTER
+  PRO
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
 model User {
   id         String   @id @default(cuid())
   name       String
@@ -42,9 +55,10 @@ model User {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  orders       Order[]
-  reviews      Review[]
-  wishlist     WishlistItem[]
+  orders        Order[]
+  reviews       Review[]
+  wishlist      WishlistItem[]
+  subscriptions Subscription[]
 
   @@index([email])
 }
@@ -157,4 +171,25 @@ model NewsletterSubscriber {
   id        String   @id @default(cuid())
   email     String   @unique
   createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier      PlanTier
+  status    SubscriptionStatus @default(PENDING)
+  provider  String             @default("SOLEASPAY")
+  orderId   String             @unique
+  reference String?
+  amount    Decimal?           @db.Decimal(10, 2)
+  currency  String?
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderId])
 }

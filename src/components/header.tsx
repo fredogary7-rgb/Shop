@@ -17,7 +17,13 @@ const NAV = [
   { label: "Accessoires", href: "/products?category=accessoires" },
 ];
 
-export function Header({ user }: { user: CurrentUser | null }) {
+export function Header({
+  user,
+  subscriptionActive = true,
+}: {
+  user: CurrentUser | null;
+  subscriptionActive?: boolean;
+}) {
   const { itemCount, mounted } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -83,6 +89,14 @@ export function Header({ user }: { user: CurrentUser | null }) {
           </nav>
 
           <div className="flex items-center gap-1">
+            {user && !subscriptionActive && (
+              <Link
+                href="/abonnement"
+                className="btn-gold hidden !rounded-full !px-4 !py-2 text-xs sm:inline-flex"
+              >
+                S&apos;abonner
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => setSearchOpen((v) => !v)}
@@ -150,6 +164,15 @@ export function Header({ user }: { user: CurrentUser | null }) {
                   {item.label}
                 </Link>
               ))}
+              {user && !subscriptionActive && (
+                <Link
+                  href="/abonnement"
+                  onClick={() => setMenuOpen(false)}
+                  className="border-b border-ink/5 py-3 text-sm font-semibold text-gold-600"
+                >
+                  S&apos;abonner
+                </Link>
+              )}
               <Link
                 href={user ? "/account" : "/login"}
                 onClick={() => setMenuOpen(false)}

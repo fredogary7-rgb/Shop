@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { getCurrentUser } from "@/lib/auth";
+import { hasActiveSubscription } from "@/lib/subscription";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -51,12 +52,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
+  const subscriptionActive = user ? await hasActiveSubscription(user.id) : false;
 
   return (
     <html lang="fr">
       <body className={`${playfair.variable} ${inter.variable} antialiased`}>
         <Providers>
-          <Header user={user} />
+          <Header user={user} subscriptionActive={subscriptionActive} />
           <main className="min-h-[60vh]">{children}</main>
           <Footer />
         </Providers>

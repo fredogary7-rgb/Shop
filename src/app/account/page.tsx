@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Package, ChevronRight, LogOut } from "lucide-react";
+import { Package, ChevronRight, LogOut, BadgeCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getActiveSubscription } from "@/lib/subscription";
+import { getPlan } from "@/lib/plans";
 import { formatPrice } from "@/lib/utils";
 import { ProfileForm } from "@/components/profile-form";
 import { StatusBadge } from "@/components/status-badge";
@@ -12,6 +14,9 @@ export const metadata = { title: "Mon compte" };
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  const subscription = await getActiveSubscription(user.id);
+  if (!subscription) redirect("/abonnement");
 
   const orders = await prisma.order.findMany({
     where: { userId: user.id },
@@ -32,6 +37,28 @@ export default async function AccountPage() {
             Se déconnecter
           </button>
         </form>
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gold-400/40 bg-gold-400/10 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <BadgeCheck className="h-6 w-6 text-gold-600" />
+          <div>
+            <p className="font-semibold text-ink">
+              Abonnement {getPlan(subscription.tier).name} actif
+            </p>
+            <p className="text-sm text-ink-muted">
+              {subscription.endDate
+                ? `Expire le ${subscription.endDate.toLocaleDateString("fr-FR")}`
+                : "Actif"}
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/abonnement"
+          className="btn-outline !px-5 !py-2.5 text-sm"
+        >
+          Gérer mon abonnement
+        </Link>
       </div>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-3">
