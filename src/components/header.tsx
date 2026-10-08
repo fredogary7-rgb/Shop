@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { Menu, Search, ShoppingBag, User, X, LogOut } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { Logo } from "./logo";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ export function Header({
   const { itemCount, mounted } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [query, setQuery] = useState("");
   const router = useRouter();
   const pathname = usePathname();
@@ -105,13 +106,65 @@ export function Header({
             >
               <Search className="h-5 w-5" />
             </button>
-            <Link
-              href={user ? "/account" : "/login"}
-              className="btn h-10 w-10 !rounded-full p-0 text-ink hover:bg-ink/5"
-              aria-label="Mon compte"
-            >
-              <User className="h-5 w-5" />
-            </Link>
+            <div className="relative">
+              {user ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setAccountOpen((v) => !v)}
+                    className="btn h-10 w-10 !rounded-full p-0 text-ink hover:bg-ink/5"
+                    aria-label="Mon compte"
+                  >
+                    <User className="h-5 w-5" />
+                  </button>
+                  {accountOpen && (
+                    <div className="absolute right-0 top-12 z-50 w-60 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-card">
+                      <div className="border-b border-ink/10 px-4 py-3">
+                        <p className="truncate text-sm font-semibold text-ink">
+                          {user.name}
+                        </p>
+                        <p className="truncate text-xs text-ink-muted">
+                          {user.email}
+                        </p>
+                      </div>
+                      <Link
+                        href="/account"
+                        onClick={() => setAccountOpen(false)}
+                        className="block px-4 py-2.5 text-sm text-ink transition hover:bg-cream"
+                      >
+                        Mon compte
+                      </Link>
+                      {user.role === "ADMIN" && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setAccountOpen(false)}
+                          className="block px-4 py-2.5 text-sm text-ink transition hover:bg-cream"
+                        >
+                          Administration
+                        </Link>
+                      )}
+                      <form action="/api/auth/logout" method="POST">
+                        <button
+                          type="submit"
+                          className="flex w-full items-center gap-2 border-t border-ink/10 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Se déconnecter
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="btn h-10 w-10 !rounded-full p-0 text-ink hover:bg-ink/5"
+                  aria-label="Se connecter"
+                >
+                  <User className="h-5 w-5" />
+                </Link>
+              )}
+            </div>
             <Link
               href="/cart"
               className="btn relative h-10 w-10 !rounded-full p-0 text-ink hover:bg-ink/5"
@@ -188,6 +241,17 @@ export function Header({
                 >
                   Administration
                 </Link>
+              )}
+              {user && (
+                <form action="/api/auth/logout" method="POST">
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-2 py-3 text-left text-sm font-medium text-red-600"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Se déconnecter
+                  </button>
+                </form>
               )}
             </nav>
           </div>
