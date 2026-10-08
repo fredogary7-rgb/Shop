@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 180" width="780" height="180" role="img" aria-label="Moretti Shop">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8bd85"/>
+      <stop offset="0.55" stop-color="#b08d57"/>
+      <stop offset="1" stop-color="#8a6a3c"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8,8) scale(0.32)">
+    <circle cx="256" cy="256" r="256" fill="#111111"/>
+    <circle cx="256" cy="256" r="214" fill="none" stroke="url(#gold)" stroke-width="6"/>
+    <circle cx="256" cy="256" r="194" fill="none" stroke="#b08d57" stroke-width="1.5" opacity="0.35"/>
+    <path d="M 152 352 L 152 160 L 256 352 L 360 160 L 360 352" fill="none" stroke="url(#gold)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="196" y="102" font-family="'Playfair Display', Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" letter-spacing="8" fill="#111111">MORETTI</text>
+  <text x="198" y="144" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="14" fill="#b08d57">SHOP</text>
+</svg>
